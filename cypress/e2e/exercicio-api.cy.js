@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { faker } from '@faker-js/faker';
 import contrato from "../contracts/usuarios.contract"
 
 describe('Testes da Funcionalidade Usuários', () => {
@@ -55,33 +56,40 @@ describe('Testes da Funcionalidade Usuários', () => {
     })
   });
 
-  it('Deve editar um usuário previamente cadastrado', () => {
-      cy.request('usuarios').then(response => {
-        let id = response.body.usuarios[0]._id
-        cy.request({
-          method: 'PUT',
-          url: `usuarios/${id}`,
-          body: {
-            "nome": "rakan",
-            "email": "rakan006@teste.com",
-            "password": "teste",
-            "administrador": "false"
-          }
-        }).then((response) => {
-          expect(response.body.message).to.equal("Registro alterado com sucesso")
-        })
+  it.only('Deve editar um usuário previamente cadastrado', () => {
+    let usuario = `usuarioNovo ${Math.floor(Math.random() * 100000000)}`
+    cy.cadastrarUsuarios("randomuser", "randomemail564@qa.com", "randompassword", "false")
+    .then(response => {
+      let id = response.body[0].id
+
+      cy.request({
+        method: 'PUT',
+        url: `usuarios/${id}`,
+        body: {
+
+            "nome": usuario,
+            "email": "randomemail764@qa.com",
+            "password": "randompassword",
+            "administrador": "true"
+        }
+      }).then(response => {
+        expect(response.status).to.equal(200)
+        expect(response.body.message).to.equal('Registro alterado com sucesso')
       })
+    })
     })
   });
 
-  it.only('Deve deletar um usuário previamente cadastrado', () => {
-    cy.request('usuarios').then(response => {
-      let id = response.body.usuarios[0]._id
+  it('Deve deletar um usuário previamente cadastrado', () => {
+    let email = `emailAleatorio ${faker.internet.email()}`
+    cy.cadastrarUsuarios("Steven", email, "wasd2244", "false")
+    .then(response => {
+      let id = response.body._id    
       cy.request({
         method: 'DELETE',
-        url: `usuarios/${id}`,
-      }).then(response =>{
-        expect(response.body.message).to.equal("Registro excluído com sucesso")
+        url: `usuarios/${id}`
+      }).then(response => {
+        expect(response.body.message).to.equal('Registro excluído com sucesso')
         expect(response.status).to.equal(200)
       })
     })
